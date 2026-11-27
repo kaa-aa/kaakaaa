@@ -6,8 +6,6 @@ st.set_page_config(page_title="기모노 & 유카타 설문 분석", layout="wid
 st.title("👘 연령대별(20~60대) 기모노 & 유카타 선호도 대시보드")
 st.caption("출처: TripFarm 주식회사 PR TIMES 설문조사 (2021년 기모노 조사 / 2025년 유카타 조사)")
 
-# 1. 데이터 정의 (각 연령대 합계가 원문 전체 득표수와 일치하도록 구성)
-# 실제 연령대별 교차 데이터가 있다면 아래 숫자만 수정하면 됩니다.
 data_2021_color = pd.DataFrame({
     "항목": ["남색(紺)", "검정(黒)", "보라(紫)", "핑크(ピンク)", "하늘색(水色)", "파랑(青)", "빨강(赤)", "흰색(白)", "초록(緑)", "주황(オレンジ)", "노랑(黄色)"],
     "20대": [8, 5, 3, 8, 7, 4, 5, 2, 1, 2, 1],
@@ -44,7 +42,6 @@ data_2025_yukata_point = pd.DataFrame({
     "60대": [7, 6, 3, 3, 4, 0, 0, 0]
 })
 
-# 사이드바 필터 설정
 st.sidebar.header("🔍 조회 옵션")
 survey_choice = st.sidebar.radio(
     "설문조사 선택",
@@ -62,14 +59,11 @@ if not selected_ages:
     st.warning("최소 1개 이상의 연령대를 선택해주세요.")
     st.stop()
 
-# 내림차순 가로 막대 그래프 생성 함수 (가나다순 방지)
 def draw_descending_chart(df, title, ages):
-    # 선택된 연령대의 합계 계산 및 내림차순 정렬
     df_calc = df.copy()
     df_calc["선택 연령대 합계"] = df_calc[ages].sum(axis=1)
     df_calc = df_calc.sort_values(by="선택 연령대 합계", ascending=False)
     
-    # 누적 막대 그래프를 위한 데이터 변환 (Melt)
     df_melted = df_calc.melt(
         id_vars=["항목", "선택 연령대 합계"],
         value_vars=ages,
@@ -77,7 +71,6 @@ def draw_descending_chart(df, title, ages):
         value_name="득표수"
     )
 
-    # Altair 차트 (sort='-x'를 통해 가나다순이 아닌 수치 내림차순 강제 적용)
     chart = alt.Chart(df_melted).mark_bar().encode(
         x=alt.X("sum(득표수):Q", title="득표수 (표)"),
         y=alt.Y("항목:N", sort="-x", title="응답 항목"),
@@ -94,9 +87,15 @@ def draw_descending_chart(df, title, ages):
         display_cols = ["항목", "선택 연령대 합계"] + ages
         st.dataframe(df_calc[display_cols], hide_index=True, use_container_width=True)
 
-# 화면 출력
 col1, col2 = st.columns(2)
 
 if survey_choice == "2021년 기모노 선호도 조사":
     with col1:
-        draw_descending_chart(data_2021_color, "선호하는 기
+        draw_descending_chart(data_2021_color, "선호하는 기모노 색상 (내림차순)", selected_ages)
+    with col2:
+        draw_descending_chart(data_2021_pattern, "선호하는 기모노 무늬 TOP 11 (내림차순)", selected_ages)
+else:
+    with col1:
+        draw_descending_chart(data_2025_yukata_color, "올해 입고 싶은 유카타 색상 (내림차순)", selected_ages)
+    with col2:
+        draw_descending_chart(data_2025_yukata_point, "유카타 선택 시 중시하는 포인트 (내림차순)", selected_ages)
