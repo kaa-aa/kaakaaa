@@ -3,7 +3,7 @@ import pandas as pd
 import altair as alt
 
 st.set_page_config(layout="wide")
-st.title("👘 기모노 & 유카타 분석 (1920s~2025)")
+st.title("👘 유카타 트렌드 분석 (1929~1930s & 2020s)")
 
 d1 = pd.DataFrame({
     "항목": ["남색", "검정", "보라", "핑크", "하늘색", "파랑", "빨강", "흰색", "초록"],
@@ -32,35 +32,22 @@ d3 = pd.DataFrame({
     "60대": [7, 2, 2, 1, 2, 1, 1, 0, 0]
 })
 
-d4 = pd.DataFrame({
-    "항목": ["잡지유행", "면직물보급", "일상복활용", "모던도안", "외출복정착"],
-    "1920년대": [40, 45, 50, 35, 30],
-    "1930년대": [55, 50, 45, 50, 45]
+d4_p = pd.DataFrame({
+    "항목": ["모던·신감각 도안", "대담한 화초무늬", "기하학·아르데코풍", "전통 중형(츄가타)무늬", "줄무늬·격자"],
+    "1929년(쇼와4)": [45, 40, 35, 30, 25],
+    "1930년(쇼와5)": [55, 45, 45, 25, 30]
 })
 
-m = st.sidebar.radio("선택", ["2021 기모노", "2025 유카타", "1920~30년대"])
+d4_c = pd.DataFrame({
+    "항목": ["쪽빛·남색 바탕", "흰 바탕에 청색", "검정·짙은 감색", "선명한 파스텔·신색상", "보라·자주계열"],
+    "1929년(쇼와4)": [50, 45, 30, 25, 20],
+    "1930년(쇼와5)": [45, 50, 35, 40, 25]
+})
+
+m = st.sidebar.radio("선택", ["2021년 선호도", "2025년 유카타", "1929~1930년 유행"])
 
 def plot(df, title, cols, g="연령대"):
     t = df.copy()
     t["합계"] = t[cols].sum(axis=1)
     t = t.sort_values("합계", ascending=False)
-    ml = t.melt(["항목", "합계"], cols, g, "수치")
-    c = alt.Chart(ml).mark_bar().encode(
-        x="sum(수치):Q", y=alt.Y("항목:N", sort="-x"), color=f"{g}:N"
-    ).properties(title=title, height=350)
-    st.altair_chart(c, use_container_width=True)
-    st.dataframe(t[["항목", "합계"] + cols], hide_index=True)
-
-if "1920" in m:
-    s = st.sidebar.multiselect("연대", ["1920년대", "1930년대"], default=["1920년대", "1930년대"])
-    if s:
-        plot(d4, "1920~1930년대 유카타 특징", s, "연대")
-else:
-    ages = ["20대", "30대", "40대", "50대", "60대"]
-    s = st.sidebar.multiselect("연령대", ages, default=ages)
-    if s:
-        if "2021" in m:
-            plot(d1, "2021 기모노 색상", s)
-            plot(d2, "2021 기모노 무늬", s)
-        else:
-            plot(d3, "2025 유카타 색상", s)
+    ml = t.melt(["항목", "합계"], cols, g, "수
