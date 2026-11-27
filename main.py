@@ -33,13 +33,13 @@ d3 = pd.DataFrame({
 })
 
 d4_p = pd.DataFrame({
-    "항목": ["모던·신감각 도안", "대담한 화초무늬", "기하학·아르데코풍", "전통 중형(츄가타)무늬", "줄무늬·격자"],
+    "항목": ["모던·신감각 도안", "대담한 화초무늬", "기하학·아르데코풍", "전통 중형무늬", "줄무늬·격자"],
     "1929년(쇼와4)": [45, 40, 35, 30, 25],
     "1930년(쇼와5)": [55, 45, 45, 25, 30]
 })
 
 d4_c = pd.DataFrame({
-    "항목": ["쪽빛·남색 바탕", "흰 바탕에 청색", "검정·짙은 감색", "선명한 파스텔·신색상", "보라·자주계열"],
+    "항목": ["쪽빛·남색 바탕", "흰 바탕에 청색", "검정·짙은 감색", "선명한 파스텔", "보라·자주계열"],
     "1929년(쇼와4)": [50, 45, 30, 25, 20],
     "1930년(쇼와5)": [45, 50, 35, 40, 25]
 })
@@ -50,4 +50,24 @@ def plot(df, title, cols, g="연령대"):
     t = df.copy()
     t["합계"] = t[cols].sum(axis=1)
     t = t.sort_values("합계", ascending=False)
-    ml = t.melt(["항목", "합계"], cols, g, "수
+    ml = t.melt(["항목", "합계"], cols, g, "수치")
+    c = alt.Chart(ml).mark_bar().encode(
+        x="sum(수치):Q", y=alt.Y("항목:N", sort="-x"), color=f"{g}:N"
+    ).properties(title=title, height=340)
+    st.altair_chart(c, use_container_width=True)
+    st.dataframe(t[["항목", "합계"] + cols], hide_index=True)
+
+if "1929" in m:
+    s = st.sidebar.multiselect("연도", ["1929년(쇼와4)", "1930년(쇼와5)"], default=["1929년(쇼와4)", "1930년(쇼와5)"])
+    if s:
+        plot(d4_p, "1929~1930년 유행 유카타 무늬 (내림차순)", s, "연도")
+        plot(d4_c, "1929~1930년 유행 유카타 색상 (내림차순)", s, "연도")
+else:
+    ages = ["20대", "30대", "40대", "50대", "60대"]
+    s = st.sidebar.multiselect("연령대", ages, default=ages)
+    if s:
+        if "2021" in m:
+            plot(d1, "2021년 선호 색상 (내림차순)", s)
+            plot(d2, "2021년 선호 무늬 (내림차순)", s)
+        else:
+            plot(d3, "2025년 유카타 색상 (내림차순)", s)
